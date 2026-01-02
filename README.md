@@ -2,7 +2,54 @@
 
 A Python CLI tool to manage Google Calendar(s). Just like notion-manager, many date formats are supported. The recurrence engine is more powerful. You only need to authenticate your accounts once.
 
-## Getting Started
+## Setup
+
+### Step 1: Create Google Cloud Project
+
+1. Go to **Google Cloud Console**
+2. Click **Select a project** → **NEW PROJECT**
+3. Name it (e.g., `"My Calendar Manager"`)
+4. Click **CREATE**
+
+---
+
+### Step 2: Enable Google Calendar API
+
+1. In your project, go to **APIs & Services** → **Library**
+2. Search for `"Google Calendar API"`
+3. Click on it → Click **ENABLE**
+
+---
+
+### Step 3: Configure OAuth Consent Screen
+
+1. Go to **APIs & Services** → **OAuth consent screen**
+2. Select **External** → Click **CREATE**
+3. Fill in required fields:
+
+   - **App name:** `Calendar Manager`
+   - **User support email:** your email
+   - **Developer contact:** your email
+
+4. Click **SAVE AND CONTINUE**
+5. Skip **Scopes** page (click **SAVE AND CONTINUE**)
+6. Skip **Test users** page (click **SAVE AND CONTINUE**)
+7. Click **BACK TO DASHBOARD**
+8. Leave it in **Testing** mode — this is fine for personal use
+
+---
+
+### Step 4: Create OAuth Credentials
+
+1. Go to **APIs & Services** → **Credentials**
+2. Click **+ CREATE CREDENTIALS** → **OAuth client ID**
+3. Application type: **Desktop app**
+4. Name: `Calendar Manager Desktop`
+5. Click **CREATE**
+6. Click **DOWNLOAD JSON**
+7. Rename the file to `credentials.json`
+
+## Using the Script
 
 Create and activate a virtual environment and install dependencies.
 ```bash

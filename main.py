@@ -130,6 +130,7 @@ def pick_timezone():
     return DEFAULT_TZ
 
 def format_date_input(user_input: str, tz: ZoneInfo):
+    
     if not user_input.strip():
         return None
 
@@ -351,7 +352,7 @@ def format_date_input(user_input: str, tz: ZoneInfo):
                         dates.append(cur)
                     cur += timedelta(days=1)
                 return dates
-            else:  # day_pattern_until
+            else:  
                 days, end_tokens = recurrence_info
                 end_dt = parse_end_date(end_tokens)
                 if not end_dt:
@@ -370,6 +371,7 @@ def format_date_input(user_input: str, tz: ZoneInfo):
 
         return [dt]
 
+    # ── Parse time ──
     if time_part:
         for time_fmt in ("%H:%M", "%I:%M %p"):
             try:
@@ -444,8 +446,28 @@ def format_date_input(user_input: str, tz: ZoneInfo):
         "_recurrences": [d.date().isoformat() for d in dates[1:]]
     }
 
+def parse_duration(duration_str):
+    """Parse duration string like '1 hr', '30 min', '1.5 hrs', '90 min' into timedelta."""
+    duration_str = duration_str.lower().strip()
+    
+    # Match patterns like "1 hr", "30 min", "1.5 hrs", "90 minutes"
+    m = re.match(r"^([\d.]+)\s*(hr|hrs?|hour|hours?|min|mins?|minute|minutes?)$", duration_str)
+    if not m:
+        return None
+    
+    value = float(m.group(1))
+    unit = m.group(2)
+    
+    if unit.startswith("hr") or unit.startswith("hour"):
+        return timedelta(hours=value)
+    elif unit.startswith("min"):
+        return timedelta(minutes=value)
+    
+    return None
+
 def show_examples():
-    print(f"\n{styling.h('Usage Examples')}\n")
+    """Display comprehensive usage examples."""
+    print(f"\n{styling.h('📚 Usage Examples')}\n")
     
     print(f"{styling.h('REGULAR EVENTS (with time)')}")
     print(f"  {styling.dim('Start:')} today 2pm          {styling.dim('→ Today at 2:00 PM')}")
@@ -529,10 +551,56 @@ def prompt_event_details(tz):
     while True:
         try:
             start_dict = format_date_input(input("\nStart date/time: "), tz=tz)
-            end_dict = format_date_input(input("End date/time: "), tz=tz)
             break
         except ValueError as e:
             print(styling.err(str(e)))
+    
+    # Check if we should offer quick durations
+    start_str = start_dict["date"]["start"]
+    has_time = "T" in start_str
+    
+    if has_time and QUICK_ACCESS_DURATIONS:
+        print(f"\n{styling.dim('Choose a duration or enter custom end time:')}")
+        for i, dur in enumerate(QUICK_ACCESS_DURATIONS, 1):
+            print(f"[{i}] {dur}")
+        choice = input("Enter number or custom end time: ").strip()
+        
+        if choice.isdigit() and 1 <= int(choice) <= len(QUICK_ACCESS_DURATIONS):
+            # Apply duration to start time
+            dur_str = QUICK_ACCESS_DURATIONS[int(choice) - 1]
+            delta = parse_duration(dur_str)
+            if delta:
+                start_dt = datetime.fromisoformat(start_str)
+                end_dt = start_dt + delta
+                end_dict = {
+                    "date": {"start": end_dt.isoformat()},
+                    "_recurrences": [dt + delta if isinstance(dt, datetime) else dt 
+                                   for dt in start_dict.get("_recurrences", [])]
+                }
+            else:
+                print(styling.warn(f"Invalid duration format: {dur_str}. Please enter end time manually."))
+                while True:
+                    try:
+                        end_dict = format_date_input(input("End date/time: "), tz=tz)
+                        break
+                    except ValueError as e:
+                        print(styling.err(str(e)))
+        else:
+            # Custom end time
+            while True:
+                try:
+                    end_dict = format_date_input(choice if choice else input("End date/time: "), tz=tz)
+                    break
+                except ValueError as e:
+                    print(styling.err(str(e)))
+                    choice = ""
+    else:
+        while True:
+            try:
+                end_dict = format_date_input(input("End date/time: "), tz=tz)
+                break
+            except ValueError as e:
+                print(styling.err(str(e)))
 
     location = input("\nLocation (optional): ").strip()
     description = input("Description (optional): ").strip()
@@ -565,6 +633,7 @@ def prompt_event_details(tz):
     }
 
 def add_events(service, event_template):
+    """Add event(s) to calendar, handling recurrences."""
     start_recurrences = event_template.pop("_start_recurrences", [])
     end_recurrences = event_template.pop("_end_recurrences", [])
     
@@ -661,7 +730,6 @@ def main():
             else:
                 print(styling.ok("Resuming..."))
 
-    # Main loop
     while True:
         try:
             event = prompt_event_details(tz)
