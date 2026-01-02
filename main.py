@@ -13,27 +13,7 @@ import threading
 import time
 import calendar as cal
 import re
-
-class styling:
-    @staticmethod
-    def h(text):
-        return f"\033[1m{text}\033[0m"
-    
-    @staticmethod
-    def dim(text):
-        return f"\033[2m{text}\033[0m"
-    
-    @staticmethod
-    def ok(text):
-        return f"\033[32m{text}\033[0m"
-    
-    @staticmethod
-    def warn(text):
-        return f"\033[33m{text}\033[0m"
-    
-    @staticmethod
-    def err(text):
-        return f"\033[31m{text}\033[0m"
+import styling
 
 def spinner(message="Working"):
     stop = False
@@ -467,7 +447,7 @@ def parse_duration(duration_str):
 
 def show_examples():
     """Display comprehensive usage examples."""
-    print(f"\n{styling.h('📚 Usage Examples')}\n")
+    print(f"\n{styling.h('Usage Examples')}\n")
     
     print(f"{styling.h('REGULAR EVENTS (with time)')}")
     print(f"  {styling.dim('Start:')} today 2pm          {styling.dim('→ Today at 2:00 PM')}")
