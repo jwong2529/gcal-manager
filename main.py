@@ -593,8 +593,22 @@ def prompt_event_details(tz):
     location = input("\nLocation (optional): ").strip()
     description = input("Description (optional): ").strip()
 
-    label = input("Label (for color mapping, optional): ").strip().lower()
-    color_id = COLOR_MAP.get(label)
+    color_id = None
+
+    if COLOR_MAP:
+        print(f"\n{styling.dim('Choose a label or leave blank:')}")
+        labels = list(COLOR_MAP.keys())
+        for i, lbl in enumerate(labels, 1):
+            print(f"[{i}] {lbl.lower().capitalize()}")
+
+        choice = input("Enter number: ").strip().lower()
+
+        if choice.isdigit() and 1 <= int(choice) <= len(labels):
+            color_id = COLOR_MAP[labels[int(choice) - 1]]
+    else:
+        label = input("Label (for color mapping, optional): ").strip().lower()
+        color_id = COLOR_MAP.get(label)
+
 
     start_str = start_dict["date"]["start"]
     end_str = end_dict["date"]["start"]
