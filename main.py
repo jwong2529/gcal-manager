@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.exceptions import RefreshError
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -69,16 +70,24 @@ def authenticate(account_name: str):
     
     creds = None
     if token_path.exists():
-        creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
+        try:
+            creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
+        except Exception:
+            creds = None
     
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except RefreshError:
+                print(styling.warn(f"Token for '{account_name}' expired. Re-authenticating..."))
+                if token_path.exists():
+                    token_path.unlink()
+                creds = None
+        if not creds:
             flow = InstalledAppFlow.from_client_secrets_file(str(credentials_path), SCOPES)
             creds = flow.run_local_server(port=0)
-        
-        token_path.write_text(creds.to_json())
+            token_path.write_text(creds.to_json())
     
     return build("calendar", "v3", credentials=creds)
 
