@@ -53,7 +53,7 @@ QUICK_ACCESS_TIMES = [t.strip() for t in os.getenv("QUICK_ACCESS_TIMES", "").spl
 QUICK_ACCESS_DURATIONS = [t.strip() for t in os.getenv("QUICK_ACCESS_DURATIONS", "").split(",") if t.strip()]
 
 COLOR_MAP = {
-    key.replace("EVENT_COLOR_", "").lower(): val
+    key.replace("EVENT_COLOR_", "").replace("_", " "): val
     for key, val in os.environ.items()
     if key.startswith("EVENT_COLOR_")
 }
@@ -608,7 +608,7 @@ def prompt_event_details(tz):
         print(f"\n{styling.dim('Choose a label or leave blank:')}")
         labels = list(COLOR_MAP.keys())
         for i, lbl in enumerate(labels, 1):
-            print(f"[{i}] {lbl.lower().capitalize()}")
+            print(f"[{i}] {lbl}")
 
         choice = input("Enter number: ").strip().lower()
 
