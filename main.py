@@ -222,13 +222,13 @@ def format_date_input(user_input: str, tz: ZoneInfo):
     consumed = 0
 
     if tokens:
-        if tokens[0] in ("today",):
+        if tokens[0] in ("today", "td"):
             dt = now.replace(hour=0, minute=0, second=0, microsecond=0)
             consumed = 1
-        elif tokens[0] in ("tomorrow",):
+        elif tokens[0] in ("tomorrow", "tm"):
             dt = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
             consumed = 1
-        elif tokens[0] in ("yesterday",):
+        elif tokens[0] in ("yesterday", "yest", "yd"):
             dt = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
             consumed = 1
         elif tokens[0] in ("this", "next") and len(tokens) >= 2:
@@ -306,7 +306,7 @@ def format_date_input(user_input: str, tz: ZoneInfo):
                 continue
 
     if dt is None:
-        raise ValueError("Invalid date. Examples: '2025-08-17', '08-17', '817', '0817'; also 'today', 'tuesday', 'this fri', 'next wed'.")
+        raise ValueError("Invalid date. Examples: '2025-08-17', '08-17', '817', '0817'; also 'today' (td), 'tomorrow' (tm), 'yesterday' (yest/yd), 'tuesday', 'this fri', 'next wed'.")
 
     def build_recurrences(dt):
         if not recurrence_mode:
@@ -468,7 +468,9 @@ def show_examples():
     
     print(f"{styling.h('REGULAR EVENTS (with time)')}")
     print(f"  {styling.dim('Start:')} today 2pm          {styling.dim('→ Today at 2:00 PM')}")
+    print(f"  {styling.dim('Start:')} td 2pm             {styling.dim('→ Today at 2:00 PM')}")
     print(f"  {styling.dim('Start:')} tomorrow 9:30 am    {styling.dim('→ Tomorrow at 9:30 AM')}")
+    print(f"  {styling.dim('Start:')} tm 9:30 am         {styling.dim('→ Tomorrow at 9:30 AM')}")
     print(f"  {styling.dim('Start:')} 0315 1400          {styling.dim('→ March 15 at 2:00 PM (14:00)')}")
     print(f"  {styling.dim('Start:')} monday 10am        {styling.dim('→ Next Monday at 10:00 AM')}")
     print(f"  {styling.dim('Start:')} this fri 3pm       {styling.dim('→ This Friday at 3:00 PM')}")
@@ -541,7 +543,7 @@ def prompt_event_details(tz):
     
     title = input("\nTitle: ").strip()
 
-    print(f"\n{styling.dim('Date formats: 2025-08-17, 08-17, 817, today, tomorrow, monday, this fri, next wed')}")
+    print(f"\n{styling.dim('Date formats: 2025-08-17, 08-17, 817, today (td), tomorrow (tm), yesterday (yest/yd), monday, this fri, next wed')}")
     print(f"{styling.dim('Time formats: 14:30, 2:30 PM, 232, 1259, 232 PM')}")
     print(f"{styling.dim('Recurrence: repeat/r, 5d, 3w, d 0315, w 0401, mwf (Mon/Wed/Fri), tth, mwf d 0315')}")
     
